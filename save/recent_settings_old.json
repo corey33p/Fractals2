@@ -1,0 +1,286 @@
+{
+    "OT_focus1_x": [
+        "float",
+        1.5
+    ],
+    "OT_focus1_y": [
+        "float",
+        1.5
+    ],
+    "OT_focus2_x": [
+        "float",
+        1.0
+    ],
+    "OT_focus2_y": [
+        "float",
+        -0.3
+    ],
+    "OT_focus3_x": [
+        "float",
+        1.2
+    ],
+    "OT_focus3_y": [
+        "float",
+        0.085
+    ],
+    "OT_focus4_x": [
+        "float",
+        0.0
+    ],
+    "OT_focus4_y": [
+        "float",
+        0.0
+    ],
+    "OT_loop_distance1": [
+        "float",
+        7.0
+    ],
+    "OT_loop_distance2": [
+        "float",
+        1.0
+    ],
+    "OT_loop_distance3": [
+        "float",
+        0.5
+    ],
+    "OT_loop_distance4": [
+        "float",
+        1.2
+    ],
+    "OT_measure_point1_x": [
+        "float",
+        0.0
+    ],
+    "OT_measure_point1_y": [
+        "float",
+        0.0
+    ],
+    "OT_measure_point2_x": [
+        "float",
+        0.0
+    ],
+    "OT_measure_point2_y": [
+        "float",
+        0.0
+    ],
+    "OT_measure_point3_x": [
+        "float",
+        0.0
+    ],
+    "OT_measure_point3_y": [
+        "float",
+        0.0
+    ],
+    "OT_measure_point4_x": [
+        "float",
+        0.0
+    ],
+    "OT_measure_point4_y": [
+        "float",
+        0.0
+    ],
+    "OT_radius1_1": [
+        "float",
+        0.3
+    ],
+    "OT_radius1_2": [
+        "float",
+        1.0
+    ],
+    "OT_radius1_3": [
+        "float",
+        0.25
+    ],
+    "OT_radius1_4": [
+        "float",
+        3.0
+    ],
+    "OT_radius2_1": [
+        "float",
+        0.5
+    ],
+    "OT_radius2_2": [
+        "float",
+        1.0
+    ],
+    "OT_radius2_3": [
+        "float",
+        0.25
+    ],
+    "OT_radius2_4": [
+        "float",
+        2.0
+    ],
+    "OT_rotation1": [
+        "float",
+        0.0
+    ],
+    "OT_rotation2": [
+        "float",
+        0.0
+    ],
+    "OT_rotation3": [
+        "float",
+        0.0
+    ],
+    "OT_rotation4": [
+        "float",
+        60.0
+    ],
+    "OT_starting_width1": [
+        "float",
+        0.5
+    ],
+    "OT_starting_width2": [
+        "float",
+        0.5
+    ],
+    "OT_starting_width3": [
+        "float",
+        0.5
+    ],
+    "OT_starting_width4": [
+        "float",
+        0.5
+    ],
+    "OT_trap_count1": [
+        "int",
+        1
+    ],
+    "OT_trap_count2": [
+        "int",
+        1
+    ],
+    "OT_trap_count3": [
+        "int",
+        1
+    ],
+    "OT_trap_count4": [
+        "int",
+        1
+    ],
+    "OT_width_deflection1": [
+        "float",
+        0.1
+    ],
+    "OT_width_deflection2": [
+        "float",
+        -0.1
+    ],
+    "OT_width_deflection3": [
+        "float",
+        0.005
+    ],
+    "OT_width_deflection4": [
+        "float",
+        0.0
+    ],
+    "bailout_value": [
+        "float",
+        2.0
+    ],
+    "black_background_check": [
+        "int",
+        1
+    ],
+    "c_formula": [
+        "int",
+        1
+    ],
+    "c_imag": [
+        "float",
+        0.5
+    ],
+    "c_real": [
+        "float",
+        0.5
+    ],
+    "color_scale_dropdown": [
+        "tuple",
+        [
+            0,
+            0,
+            0,
+            0
+        ]
+    ],
+    "equation": [
+        "str",
+        "Z**2+C"
+    ],
+    "image_height": [
+        "int",
+        955
+    ],
+    "image_name": [
+        "str",
+        "E:/Documents/AASB/Successive_Refinement/save/Fractal.png"
+    ],
+    "image_width": [
+        "int",
+        955
+    ],
+    "iterations": [
+        "int",
+        333
+    ],
+    "load_filename": [
+        "str",
+        "E:/Documents/AASB/Successive_Refinement/save/recent_settings.json"
+    ],
+    "proportion_rectangle_check": [
+        "int",
+        1
+    ],
+    "rotation": [
+        "float",
+        270.0
+    ],
+    "save_filename": [
+        "str",
+        "E:/Documents/AASB/Successive_Refinement/save/user_settings.json"
+    ],
+    "scheme_check": [
+        "tuple",
+        [
+            1,
+            0,
+            0,
+            0
+        ]
+    ],
+    "scheme_dropdown": [
+        "tuple",
+        [
+            1,
+            0,
+            0,
+            0
+        ]
+    ],
+    "sequence_entry": [
+        "tuple",
+        [
+            "0B263",
+            "02468",
+            "02468",
+            "02468"
+        ]
+    ],
+    "x_max": [
+        "float",
+        -1.5560209424083769
+    ],
+    "x_min": [
+        "float",
+        -1.6858638743455496
+    ],
+    "y_max": [
+        "float",
+        0.06492146596858699
+    ],
+    "y_min": [
+        "float",
+        -0.06492146596858579
+    ]
+}
