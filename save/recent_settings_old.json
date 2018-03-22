@@ -195,6 +195,10 @@
         "float",
         0.5
     ],
+    "color_repeat": [
+        "float",
+        21.0
+    ],
     "color_scale_dropdown": [
         "tuple",
         [
@@ -214,7 +218,7 @@
     ],
     "image_name": [
         "str",
-        "E:/Documents/AASB/Successive_Refinement/save/Fractal.png"
+        "E:/Documents/AASB/numpy only/save/Fractal.png"
     ],
     "image_width": [
         "int",
@@ -222,13 +226,17 @@
     ],
     "iterations": [
         "int",
-        333
+        13282
     ],
     "load_filename": [
         "str",
-        "E:/Documents/AASB/Successive_Refinement/save/recent_settings.json"
+        "E:/Documents/AASB/numpy only/save/recent_settings.json"
     ],
     "proportion_rectangle_check": [
+        "int",
+        1
+    ],
+    "repeat_colors_check": [
         "int",
         1
     ],
@@ -238,7 +246,7 @@
     ],
     "save_filename": [
         "str",
-        "E:/Documents/AASB/Successive_Refinement/save/user_settings.json"
+        "E:/Documents/AASB/numpy only/save/user_settings.json"
     ],
     "scheme_check": [
         "tuple",
@@ -261,7 +269,7 @@
     "sequence_entry": [
         "tuple",
         [
-            "0B263",
+            "0B2630",
             "02468",
             "02468",
             "02468"
@@ -269,18 +277,18 @@
     ],
     "x_max": [
         "float",
-        -1.5560209424083769
+        -0.5280435250312336
     ],
     "x_min": [
         "float",
-        -1.6858638743455496
+        -0.5280435251943727
     ],
     "y_max": [
         "float",
-        0.06492146596858699
+        0.7064375459631828
     ],
     "y_min": [
         "float",
-        -0.06492146596858579
+        0.7064375458000437
     ]
 }

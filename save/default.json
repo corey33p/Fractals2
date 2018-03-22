@@ -195,6 +195,22 @@
         "float",
         0.5
     ],
+    "color_repeat1": [
+        "float",
+        21.0
+    ],
+    "color_repeat2": [
+        "float",
+        21.0
+    ],
+    "color_repeat3": [
+        "float",
+        21.0
+    ],
+    "color_repeat4": [
+        "float",
+        21.0
+    ],
     "color_scale_dropdown": [
         "tuple",
         [
@@ -214,7 +230,7 @@
     ],
     "image_name": [
         "str",
-        "E:/Documents/AASB/Successive_Refinement/save/Fractal.png"
+        "E:/Documents/AASB/numpy only/save/Fractal.png"
     ],
     "image_width": [
         "int",
@@ -226,7 +242,7 @@
     ],
     "load_filename": [
         "str",
-        "E:/Documents/AASB/Successive_Refinement/save/recent_settings.json"
+        "E:/Documents/AASB/numpy only/save/recent_settings.json"
     ],
     "proportion_rectangle_check": [
         "int",
@@ -238,7 +254,7 @@
     ],
     "save_filename": [
         "str",
-        "E:/Documents/AASB/Successive_Refinement/save/user_settings.json"
+        "E:/Documents/AASB/numpy only/save/user_settings.json"
     ],
     "scheme_check": [
         "tuple",

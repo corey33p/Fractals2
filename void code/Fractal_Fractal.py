@@ -4,7 +4,6 @@ import math
 from PIL import Image
 import time
 import json
-np.warnings.filterwarnings('ignore')
 
 class Fractal:
     def __init__(self, dictionary_of_settings, parent):
@@ -17,9 +16,6 @@ class Fractal:
         self.previous_iterations = 'NA'
         self.previous_previous_iterations ='NA'
         self.packed_settings={}
-        self.image_in_progress = False
-        self.last_image_loaded = ''
-        if os.path.isfile(os.getcwd().replace('\\','/') + '/temp/stop'): os.remove(os.getcwd().replace('\\','/') + '/temp/stop')
     def print_tensor(self, the_ndarray):
         if type(the_ndarray)!=np.ndarray:
             print(str(the_ndarray))
@@ -29,44 +25,65 @@ class Fractal:
             return
         for i in range(the_ndarray.shape[2]): print("\n"+str(the_ndarray[...,i]))
         return
-    def setup_fractal(self):
-        def clear_pictures():
-            name = self.settings['image_name'][1]
-            index = name.index('save/')
-            name = name[index+5:]
-            index = name.index('.png')
-            name = name[:index] + "-"
-            list_files = [os.getcwd() + "\\save\\" + file for file in os.listdir(os.getcwd() + "\\save\\") if name in file]
-            for file in list_files:
-                file_cleared = False
-                while not file_cleared: 
-                    try: 
-                        os.remove(file)
-                        file_cleared = True
-                    except: 
-                        print("Waiting to delete file.")
-                        time.sleep(.2)
-        def package_settings():
-            self.packed_settings['OT_focus_x'] = [self.settings['OT_focus1_x'][1],self.settings['OT_focus2_x'][1],self.settings['OT_focus3_x'][1],self.settings['OT_focus4_x'][1]]
-            self.packed_settings['OT_focus_y'] = [self.settings['OT_focus1_y'][1],self.settings['OT_focus2_y'][1],self.settings['OT_focus3_y'][1],self.settings['OT_focus4_y'][1]]
-            self.packed_settings['OT_color_point_x'] = [self.settings['OT_measure_point1_x'][1],self.settings['OT_measure_point2_x'][1],self.settings['OT_measure_point3_x'][1],self.settings['OT_measure_point4_x'][1]]
-            self.packed_settings['OT_color_point_y'] = [self.settings['OT_measure_point1_y'][1],self.settings['OT_measure_point2_y'][1],self.settings['OT_measure_point3_y'][1],self.settings['OT_measure_point4_y'][1]]
-            # convert to radians
-            self.packed_settings['OT_rotation'] = [float(self.settings['OT_rotation1'][1]) * math.pi / 180, float(self.settings['OT_rotation2'][1]) * math.pi / 180, float(self.settings['OT_rotation3'][1]) * math.pi / 180, float(self.settings['OT_rotation4'][1]) * math.pi / 180]
-            self.packed_settings['OT_radius1'] = [self.settings['OT_radius1_1'][1],self.settings['OT_radius1_2'][1],self.settings['OT_radius1_3'][1],self.settings['OT_radius1_4'][1]]
-            self.packed_settings['OT_radius2'] = [self.settings['OT_radius2_1'][1],self.settings['OT_radius2_2'][1],self.settings['OT_radius2_3'][1],self.settings['OT_radius2_4'][1]]
-            self.packed_settings['OT_starting_width'] = [self.settings['OT_starting_width1'][1],self.settings['OT_starting_width2'][1],self.settings['OT_starting_width3'][1],self.settings['OT_starting_width4'][1]]
-            self.packed_settings['OT_width_deflection'] = [self.settings['OT_width_deflection1'][1],self.settings['OT_width_deflection2'][1],self.settings['OT_width_deflection3'][1],self.settings['OT_width_deflection4'][1]]
-            self.packed_settings['OT_loop_distance'] = [self.settings['OT_loop_distance1'][1],self.settings['OT_loop_distance2'][1],self.settings['OT_loop_distance3'][1],self.settings['OT_loop_distance4'][1]]
-            self.packed_settings['OT_trap_count'] = [self.settings['OT_trap_count1'][1],self.settings['OT_trap_count2'][1],self.settings['OT_trap_count3'][1],self.settings['OT_trap_count4'][1]]
-        clear_pictures()
-        package_settings()
-        
-        delete_rectangle = True
-        
+    def package_settings(self):
+        self.packed_settings['OT_focus_x'] = [self.settings['OT_focus1_x'][1],self.settings['OT_focus2_x'][1],self.settings['OT_focus3_x'][1],self.settings['OT_focus4_x'][1]]
+        self.packed_settings['OT_focus_y'] = [self.settings['OT_focus1_y'][1],self.settings['OT_focus2_y'][1],self.settings['OT_focus3_y'][1],self.settings['OT_focus4_y'][1]]
+        self.packed_settings['OT_color_point_x'] = [self.settings['OT_measure_point1_x'][1],self.settings['OT_measure_point2_x'][1],self.settings['OT_measure_point3_x'][1],self.settings['OT_measure_point4_x'][1]]
+        self.packed_settings['OT_color_point_y'] = [self.settings['OT_measure_point1_y'][1],self.settings['OT_measure_point2_y'][1],self.settings['OT_measure_point3_y'][1],self.settings['OT_measure_point4_y'][1]]
+        # convert that shit to radians
+        self.packed_settings['OT_rotation'] = [float(self.settings['OT_rotation1'][1]) * math.pi / 180, float(self.settings['OT_rotation2'][1]) * math.pi / 180, float(self.settings['OT_rotation3'][1]) * math.pi / 180, float(self.settings['OT_rotation4'][1]) * math.pi / 180]
+        self.packed_settings['OT_radius1'] = [self.settings['OT_radius1_1'][1],self.settings['OT_radius1_2'][1],self.settings['OT_radius1_3'][1],self.settings['OT_radius1_4'][1]]
+        self.packed_settings['OT_radius2'] = [self.settings['OT_radius2_1'][1],self.settings['OT_radius2_2'][1],self.settings['OT_radius2_3'][1],self.settings['OT_radius2_4'][1]]
+        self.packed_settings['OT_starting_width'] = [self.settings['OT_starting_width1'][1],self.settings['OT_starting_width2'][1],self.settings['OT_starting_width3'][1],self.settings['OT_starting_width4'][1]]
+        self.packed_settings['OT_width_deflection'] = [self.settings['OT_width_deflection1'][1],self.settings['OT_width_deflection2'][1],self.settings['OT_width_deflection3'][1],self.settings['OT_width_deflection4'][1]]
+        self.packed_settings['OT_loop_distance'] = [self.settings['OT_loop_distance1'][1],self.settings['OT_loop_distance2'][1],self.settings['OT_loop_distance3'][1],self.settings['OT_loop_distance4'][1]]
+        self.packed_settings['OT_trap_count'] = [self.settings['OT_trap_count1'][1],self.settings['OT_trap_count2'][1],self.settings['OT_trap_count3'][1],self.settings['OT_trap_count4'][1]]
+    def generate_refinement_steps(self,ar):
+        smallest_dim = min(ar.shape[0],ar.shape[1])
+        divide_size = 1
+        while divide_size*2 < smallest_dim:
+            divide_size *= 2
+        done_matrix = np.zeros((ar.shape[0],ar.shape[1]))==1
+        old_relevant_mask = None
+        if divide_size > 8: divide_size = int(divide_size / 2)
+        while divide_size >= 1:
+            tentative_row_count = ar.shape[0]/divide_size
+            tentative_col_count = ar.shape[1]/divide_size
+            row_count = math.ceil(tentative_row_count)
+            col_count = math.ceil(tentative_col_count)
+            relevant_values = np.zeros((row_count,col_count))
+            for row in range(row_count):
+                for col in range(col_count):
+                    if not done_matrix[row*divide_size,col*divide_size]:
+                        relevant_values[row,col] = ar[row*divide_size,col*divide_size]
+                        done_matrix[row*divide_size,col*divide_size] = True
+                    else:
+                        relevant_values[row,col] = old_values[int(row/2),int(col/2)]
+            relevant_mask = np.zeros(ar.shape) == 1
+            relevant_mask[0::divide_size,0::divide_size] = True
+            base_mask = np.copy(relevant_mask)
+            if old_relevant_mask is not None: relevant_mask[old_relevant_mask] = False
+            yield relevant_values,divide_size,relevant_mask,base_mask
+            old_values = np.copy(relevant_values)
+            old_relevant_mask = np.copy(relevant_mask)
+            divide_size = int(divide_size / 2)
+    def expand_array(self,ar,template):
+        if ar.size != template.sum(): 
+            print("template.sum(): " + str(template.sum()))
+            print("ar.shape: " + str(ar.shape))
+            # np.save(os.getcwd()+"/ar",ar)
+            # np.save(os.getcwd()+"/template",template)
+            1/0
+        else: 
+            new_ar = np.zeros(template.shape)
+            new_ar[template] = ar.flatten()
+            return new_ar
+    def compute(self):
         x_center = (self.settings['x_min'][1] + self.settings['x_max'][1]) / 2
         y_center = (self.settings['y_min'][1] + self.settings['y_max'][1]) / 2
         radians = self.settings['rotation'][1] * math.pi / 180
+
+        self.package_settings()
 
         self.parent.text_out.write("\nComputing coordinates...")
 
@@ -132,45 +149,90 @@ class Fractal:
 
         # create function of the iterative equation
         exec("self.iterate_calc = lambda Z, C: " + self.settings['equation'][1])
+        
+        self.saved_RGB_vals = False
+        for sub_matrix,step_size,relevant_mask,base_mask in self.generate_refinement_steps(self.coordinate_matrix):
+            # reset some erroneous calculations from previous refinement step
+            self.main_escape_iterations[relevant_mask]=-1
+            self.OT_escape_iterations[relevant_mask]=-1
+            self.escape_distance[relevant_mask]=-1
+            self.OT_escape_iterations[relevant_mask]=-1
+            
+            rows,columns=sub_matrix.shape[0],sub_matrix.shape[1]
+            self.parent.text_out.write("\n"+str(rows)+"x"+str(columns)+" out of "+str(self.settings['image_height'][1])+"x"+str(self.settings['image_width'][1]))
+            self.z_current = np.zeros((relevant_mask.shape[0],relevant_mask.shape[1]),dtype=np.complex_)
 
-        self.z_current = np.zeros((self.settings['image_height'][1],self.settings['image_width'][1]),dtype=np.complex_)
-        self.nan_mask = np.ones(self.coordinate_matrix.shape).astype(np.bool)
-        
-        self.iteration = -1
-    def iterate_fractal(self):
-        self.iteration += 1
-        if self.iteration == 0: self.parent.text_out.write("\niteration: " + str(self.iteration + 1) + " / " + str(int(self.settings['iterations'][1])))
-        else: self.parent.text_out.overwrite("iteration: " + str(self.iteration + 1) + " / " + str(int(self.settings['iterations'][1])))
-        if self.settings['c_formula'][1] == 1:
-            self.z_current[self.nan_mask] = self.iterate_calc(self.z_current[self.nan_mask], 
-                                                              self.coordinate_matrix[self.nan_mask])
-        elif self.settings['c_formula'][1] == 2:
-            if self.iteration != 0: self.z_current[self.nan_mask] = self.iterate_calc(self.z_current[self.nan_mask], 
-                                                                                 complex(self.settings['c_real'][1], 
-                                                                                 self.settings['c_imag'][1]))
+            iteration_mask = np.copy(relevant_mask)
+            # freakin ITERATE
+            for iteration in range(0, int(self.settings['iterations'][1])):
+                if self.parent.stop_early: 
+                    self.parent.fractal_processing = False
+                    return
+                self.current_iteration = iteration
+                if self.settings['c_formula'][1] == 1:
+                    self.z_current[iteration_mask] = self.iterate_calc(self.z_current[iteration_mask], 
+                                                                      self.coordinate_matrix[iteration_mask])
+                elif self.settings['c_formula'][1] == 2:
+                    if iteration != 0: self.z_current[iteration_mask] = self.iterate_calc(self.z_current[iteration_mask], 
+                                                                                         complex(self.settings['c_real'][1], 
+                                                                                         self.settings['c_imag'][1]))
+                    else:
+                        self.z_current[iteration_mask] = self.iterate_calc(self.z_current[iteration_mask], 
+                                                                          self.coordinate_matrix[iteration_mask])
+                where_nan = np.isnan(self.z_current)
+                iteration_mask[where_nan] = False
+                if len(self.orbit_trap_dict) > 0: self.orbit_traps(self.z_current)
+                
+                bailout_escaped = (abs(self.z_current) > self.settings['bailout_value'][1])
+                
+                not_yet_escaped = (self.main_escape_iterations[relevant_mask] == -1)
+                
+                where_escaped = np.logical_and(bailout_escaped[relevant_mask],not_yet_escaped)
+                where_escaped = self.expand_array(where_escaped,relevant_mask).astype(np.bool)
+                
+                self.main_escape_iterations[where_escaped] = iteration
+                
+                esc_distance_not_set = self.escape_distance == -1
+                # esc_distance_not_set = self.expand_array(esc_distance_not_set,relevant_mask)
+                
+                # expanded_z_current = self.expand_array(self.z_current,base_mask)
+                self.escape_distance[np.logical_and(bailout_escaped, 
+                                                    esc_distance_not_set)] = np.abs(self.z_current[np.logical_and((abs(self.z_current) > self.settings['bailout_value'][1]), self.escape_distance == -1)])
+            
+            # get rid of the -1's in self.escape_distance
+            # because these values will be used in logarithmic formulas
+            one_time_escape_distance = np.array(self.escape_distance)
+            one_time_escape_distance[one_time_escape_distance == -1] = 1
+
+            # build matrix with all the normalized values to be converted to RGB
+            self.normalized_RGB_1 = self.main_escape_iterations / self.settings['iterations'][1]
+            
+            # # continuous potential
+            # self.normalized_RGB_2 = np.log(one_time_escape_distance)/2**self.main_escape_iterations
+            
+            # continuous iteration count
+            self.normalized_RGB_2 = (self.main_escape_iterations + 1 - np.log(np.log(one_time_escape_distance))/math.log(2))/self.settings['iterations'][1]
+            
+            # colorize
+            self.colorize()
+            
+            # send the RGB values into an image and save the image
+            if not isinstance(self.saved_RGB_vals,np.ndarray):
+                self.saved_RGB_vals = np.copy(self.final_RGB_vals)
             else:
-                self.z_current[self.nan_mask] = self.iterate_calc(self.z_current[self.nan_mask], 
-                                                                  self.coordinate_matrix[self.nan_mask])
-        self.nan_mask = np.invert(np.isnan(self.z_current))
-        if len(self.orbit_trap_dict) > 0: self.orbit_traps(self.z_current)
-        
-        bailout_escaped = (abs(self.z_current) > self.settings['bailout_value'][1])
-        not_yet_escaped = (self.main_escape_iterations == -1)
-        where_escaped = np.logical_and(bailout_escaped,not_yet_escaped)
-        self.main_escape_iterations[where_escaped] = self.iteration
-        
-        esc_distance_not_set = self.escape_distance == -1
-        self.escape_distance[where_escaped] = np.abs(self.z_current[where_escaped])
-        
-        self.parent.colorize_thread()
-        
-        if self.iteration == self.settings['iterations'][1] - 1:
+                diff = base_mask.astype(np.int32) - relevant_mask.astype(np.int32)
+                diff = diff.astype(np.bool)
+                self.final_RGB_vals[diff] = self.saved_RGB_vals[diff]
+                self.saved_RGB_vals = np.copy(self.final_RGB_vals)
+            picture = self.saved_RGB_vals[base_mask].reshape(list(sub_matrix.shape)+[3])
+            Image.fromarray(np.uint8(picture)).save(self.settings['image_name'][1])
+            
+            # load the image into the canvas
+            self.parent.canvas_object.load_new_picture(self.settings['image_name'][1])
+
             self.tt = time.clock()
-            self.parent.text_out.write("Elapsed time: " + self.seconds_to_time(self.tt-self.t))
-            return
-        
-        self.parent.process_queue.put(lambda: self.parent.colorize_thread())
-        self.parent.process_queue.put(lambda: self.iterate_fractal())
+            self.parent.text_out.write("\nElapsed time: " + self.seconds_to_time(self.tt-self.t))
+            self.t = self.tt
     def orbit_traps(self, current_complex_matrix):
         for i in self.orbit_trap_dict.keys():
             if (self.orbit_trap_dict[i] == 2) or (self.orbit_trap_dict[i] == 3):
@@ -179,256 +241,7 @@ class Fractal:
                 self.OT_line(current_complex_matrix, i)
             elif self.orbit_trap_dict[i] == 5:
                 self.OT_cross(current_complex_matrix, i)
-    def save_settings(self, manual=False, default=False):
-        if default: f = os.getcwd().replace('\\','/')+"/save/default.json"
-        elif manual: f = self.settings['save_filename'][1]
-        else:
-            if os.path.isfile(os.getcwd().replace('\\','/') + "/save/recent_settings.json"):
-                if os.path.isfile(os.getcwd().replace('\\','/') + "/save/recent_settings_old.json"):
-                    os.remove(os.getcwd().replace('\\','/') + "/save/recent_settings_old.json")
-                os.rename(os.getcwd().replace('\\','/') + "/save/recent_settings.json", 
-                          os.getcwd().replace('\\','/') + "/save/recent_settings_old.json")
-            f = os.getcwd().replace('\\','/') + '/save/recent_settings.json'
-        with open(f, 'w') as fp:
-            json.dump(self.settings, fp, sort_keys=True, indent=4)
-        if default:  self.parent.text_out.write("\n!!!!! Default Settings Have Been Set !!!!!")
-        elif manual: self.parent.text_out.write("\n!!!!! Settings Have Been Saved !!!!!")
-        else:        self.parent.text_out.write("\n!!!!! Settings Have Been Backed Up !!!!!")
-    def settings_import_from_file(self, filename):
-        try:
-            with open(filename, 'r') as fp:
-                self.settings = json.load(fp)
-        except: 
-            print("Couldn't import file settings from " + filename)
-        return
-    def seconds_to_time(self, seconds_in):
-        try:
-            seconds_in = float(seconds_in)
-        except:
-            self.parent.text_out.write("Type error: non-number passed to the seconds_to_time function.")
-            return
-        if seconds_in > 3600:
-            hours = int(seconds_in // 3600)
-            minutes = int(seconds_in % 3600/60)
-            seconds = format((seconds_in % 60), '.2f')
-            result = str(hours) + "h " + str(minutes)+ "m "+ seconds + "s"
-        elif seconds_in > 60:
-            minutes = int(seconds_in // 60)
-            seconds = format(seconds_in % 60, '.2f')
-            result = str(minutes) + "m " + seconds + "s"
-        else:
-            seconds =  format(seconds_in, '.2f')
-            result = seconds + "s"
-        return result
-    def pythagoras(self, a, b):
-        if type(a) == np.ndarray or type(b) == np.ndarray:
-            return np.power(np.power(a, 2) + np.power(b, 2), .5)
-        return math.pow(math.pow(a, 2) + math.pow(b, 2), .5)
-    def OT_ellipse(self, z_current, which_scheme):
-        A = z_current.real
-        B = z_current.imag
-        # focus = self.packed_settings['OT_focus'][1][which_scheme].split(",")
-        focus = (self.packed_settings['OT_focus_x'][which_scheme], self.packed_settings['OT_focus_y'][which_scheme])
-        X = float(focus[0])
-        Y = float(focus[1])
-        XR = self.packed_settings['OT_radius1'][which_scheme]
-        if self.settings['scheme_dropdown'][1][which_scheme] == 2: YR = XR
-        else: YR = self.packed_settings['OT_radius2'][which_scheme]
-        rotation = self.packed_settings['OT_rotation'][which_scheme]
-        x_component = np.power((((A - X) * np.cos(rotation) - (B - Y) * np.sin(rotation)) / XR), 2)
-        y_component = np.power((((A - X) * np.sin(rotation) - (B - Y) * np.cos(rotation)) / YR), 2)
-
-        # check if point falls within orbit trap
-        in_trap = x_component + y_component <= 1
-
-        # where point falls within orbit trap, increment the trap count
-        self.OT_trap_count[...,which_scheme][in_trap] = self.OT_trap_count[...,which_scheme][in_trap] + 1
-
-        # where trap threshold met, show true
-        threshold_met = self.OT_trap_count[...,which_scheme] == self.packed_settings['OT_trap_count'][which_scheme]
-
-        # where trap count threshold newly reached, set normalized RGB value (between 0 and 1)
-        self.OT_RGBs[...,which_scheme][np.logical_and(threshold_met, np.invert(self.previously_trapped[...,which_scheme]))] = (self.pythagoras(A - X, B - Y) % self.packed_settings['OT_loop_distance'][which_scheme])[np.logical_and(threshold_met, np.invert(self.previously_trapped[...,which_scheme]))]
-
-        # where trap count threshold newly reached, record the current iteration count
-        self.OT_escape_iterations[...,which_scheme][np.logical_and(threshold_met, np.invert(self.previously_trapped[...,which_scheme]))]=self.iteration
-
-        # show which color scheme trapped the pixel
-        self.OT_which_trap[np.logical_and(threshold_met, np.invert(self.previously_trapped[...,which_scheme]))] = which_scheme
-
-        # turn to true where trap requirements met and RGB value is set
-        self.previously_trapped[...,which_scheme] += threshold_met
-    def OT_cross(self, z_current, which_scheme):
-
-        slope = math.tan(self.packed_settings['OT_rotation'][which_scheme] % 2*math.pi)
-        if slope != 0: perpendicular_slope = -1/slope
-        else: perpendicular_slope = 9999999
-        focus = [self.packed_settings['OT_focus_x'][which_scheme], self.packed_settings['OT_focus_y'][which_scheme]]
-        for i,j in enumerate(focus): focus[i]=float(j) #cast the entries as floats
-        equation = (slope, focus[1] - slope * focus[0] )
-        perpendicular_equation = (perpendicular_slope, focus[1] - perpendicular_slope * focus[0])
-
-        # line 2 is perpendicular to line 1, for the second arm of the "cross"
-        dist_to_line1 = self.shortest_distance(equation, z_current)
-        dist_to_line2 = self.shortest_distance(perpendicular_equation, z_current)
-
-        # trickery = np.array(z_current)
-        # trickery.real = z_current.imag
-        # trickery.imag = z_current.real
-        # dist_to_line2 = self.shortest_distance(equation, trickery)
-
-        starting_width = self.packed_settings['OT_starting_width'][which_scheme]
-        width_deflection = self.packed_settings['OT_width_deflection'][which_scheme]
-
-        # check if points fall within orbit trap
-        in_trap = np.logical_or(dist_to_line1[0] <= starting_width / 2 + width_deflection * self.pythagoras(dist_to_line1[1] - focus[0], dist_to_line1[2] - focus[1]),
-                                        dist_to_line2[0] <= starting_width / 2 + width_deflection * self.pythagoras(dist_to_line2[1] - focus[0], dist_to_line2[2] - focus[1]))
-
-        # where points fall within orbit trap, increment the trap count
-        self.OT_trap_count[...,which_scheme][in_trap] = self.OT_trap_count[...,which_scheme][in_trap] + 1
-
-        # create mask for where the threshold is met
-        threshold_met = self.OT_trap_count[...,which_scheme] == self.packed_settings['OT_trap_count'][which_scheme]
-
-        color_loop_dist = self.packed_settings['OT_loop_distance'][which_scheme]
-
-        # where trap count threshold newly reached, set normalized RGB value (between 0 and 1)
-        self.OT_RGBs[...,which_scheme][np.logical_and(threshold_met, np.invert(self.previously_trapped[...,which_scheme]))] = ((self.pythagoras(z_current.real - focus[0], z_current.imag - focus[1]) % color_loop_dist) / color_loop_dist)[np.logical_and(threshold_met, np.invert(self.previously_trapped[...,which_scheme]))]
-
-        # where trap count threshold newly reached, record the current iteration count
-        self.OT_escape_iterations[...,which_scheme][np.logical_and(threshold_met, np.invert(self.previously_trapped[...,which_scheme]))]=self.iteration
-
-        # show which color scheme trapped the pixel
-        self.OT_which_trap[np.logical_and(threshold_met, np.invert(self.previously_trapped[...,which_scheme]))] = which_scheme
-
-        # turn to true where trap requirements met and RGB value is set
-        self.previously_trapped[...,which_scheme] += threshold_met
-
-        return
-    def OT_spiral(self, focus, rotation, starting_width, width_deflection):
-        dist_point_from_focus = pythagoras(point[0] - focus[0], point[1] - focus[1])
-        angle = asin((point[1] - focus[1]) / dist_point_from_focus)
-        #calculate bounds of perspective in coordinate grid
-        #analyze portions accordingly
-        #find local minima
-        #8-10 repetitions of dividing range by 2, determining if should be lower or higher
-        #infer global minimum by finding smallest one before they start increasing again
-        #thus determine distance from spiral orbit trap, and compute color accordingly
-
-        def length(a, t): #calculates length of spiral r = a^t from its start, given a(arbitrary coefficient), and t(theta; the angle)
-            term1 = math.log(a)**2
-            term2 = a**t*math.log(a)*math.cos(t)
-            term3 = -a**t*math.sin(t)
-            term4 = a**t*math.cos(t)
-            term5 = a**t*math.log(a)*math.sin(t)
-            term6 = math.log(a)**3
-            term7 = math.log(a)
-            upper_bound = (term1 + 1) * ((term2 + term3)**2 + (term4 + term5)**2)**.5 / (term6 + term7)
-            t = 0
-            term1 = math.log(a)**2
-            term2 = a**t*math.log(a)*math.cos(t)
-            term3 = -a**t*math.sin(t)
-            term4 = a**t*math.cos(t)
-            term5 = a**t*math.log(a)*math.sin(t)
-            term6 = math.log(a)**3
-            term7 = math.log(a)
-            lower_bound = (term1 + 1) * ((term2 + term3)**2 + (term4 + term5)**2)**.5 / (term6 + term7)
-            return upper_bound - lower_bound
-    def OT_line(self, z_current, which_scheme):
-
-        slope = math.tan(self.packed_settings['OT_rotation'][which_scheme] * 180 / math.pi)
-        focus = [self.packed_settings['OT_focus_x'][which_scheme], self.packed_settings['OT_focus_y'][which_scheme]]
-        for i,j in enumerate(focus): focus[i]=float(j) #cast the entries as floats
-        equation = (slope, focus[1] - slope * focus[0])
-
-        # QC the "trickery". Convince yourself it's correct.
-        # line 2 is perpendicular to line 1, for the second arm of the "cross"
-        dist_to_line = self.shortest_distance(equation, z_current)
-
-        starting_width = self.packed_settings['OT_starting_width'][which_scheme]
-        width_deflection = self.packed_settings['OT_width_deflection'][which_scheme]
-
-        # check if points fall within orbit trap
-        in_trap = dist_to_line[0] <= starting_width / 2 + width_deflection * self.pythagoras(dist_to_line[1] - focus[0], dist_to_line[2] - focus[1])
-
-        # where points fall within orbit trap, increment the trap count
-        self.OT_trap_count[...,which_scheme][in_trap] = self.OT_trap_count[...,which_scheme][in_trap] + 1
-
-        # create mask for where the threshold is met
-        threshold_met = self.OT_trap_count[...,which_scheme] == self.packed_settings['OT_trap_count'][which_scheme]
-
-        color_loop_dist = self.packed_settings['OT_loop_distance'][which_scheme]
-
-        # where trap count threshold newly reached, set normalized RGB value (between 0 and 1)
-        self.OT_RGBs[...,which_scheme][np.logical_and(threshold_met, np.invert(self.previously_trapped[...,which_scheme]))] = ((self.pythagoras(z_current.real - focus[0], z_current.imag - focus[1]) % color_loop_dist) / color_loop_dist)[np.logical_and(threshold_met, np.invert(self.previously_trapped[...,which_scheme]))]
-
-        # where trap count threshold newly reached, record the current iteration count
-        self.OT_escape_iterations[...,which_scheme][np.logical_and(threshold_met, np.invert(self.previously_trapped[...,which_scheme]))]=self.iteration
-
-        # show which color scheme trapped the pixel
-        self.OT_which_trap[np.logical_and(threshold_met, np.invert(self.previously_trapped[...,which_scheme]))] = which_scheme
-
-        # turn to true where trap requirements met and RGB value is set
-        self.previously_trapped[...,which_scheme] += threshold_met
-
-        return
-    def shortest_distance(self, equation, points): #calculates the minimum distance between a point and a line
-        if equation[0] == 0:
-            return abs(equation[1] - points.imag), points.real, points.real * 0 + equation[1]
-        multiplicative_inverse = -1 / equation[0]
-
-        # been some time since I wrote this, but I think perp_equation is
-        # to the center line of the second arm of the trap, for each point
-        perp_equation = (multiplicative_inverse, points.imag - multiplicative_inverse * points.real)
-        intersection_point_x = (perp_equation[1] - equation[1]) / (equation[0] - perp_equation[0])
-        intersection_point_y = intersection_point_x * equation[0] + equation[1]
-
-        # returns the distance, and x and y coordinates of the intersection point, for each pixel
-        return self.pythagoras(points.real - intersection_point_x, points.imag - intersection_point_y), intersection_point_x, intersection_point_y
-
-class Colorizer:
-    def __init__(self,settings):
-        self.settings = settings
-        f = os.getcwd().replace('\\','/') + '/temp/colorizing'
-        if os.path.isfile(f):
-            os.remove(f)
     def colorize(self):
-        # get rid of the -1's in self.escape_distance
-        # because these values will be used in logarithmic formulas
-        one_time_escape_distance = np.array(self.escape_distance)
-        one_time_escape_distance[one_time_escape_distance == -1] = 1
-        
-        if self.settings['repeat_colors_check'][1] == 0:
-            # build matrix with all the normalized values to be converted to RGB
-            self.normalized_RGB_1 = self.main_escape_iterations / self.settings['iterations'][1]
-            
-            # continuous iteration count
-            self.normalized_RGB_2 = (self.main_escape_iterations + 1 - np.log(np.log(one_time_escape_distance))/math.log(2))/self.settings['iterations'][1]
-        elif self.settings['repeat_colors_check'][1] == 1:
-            # build matrix with all the normalized values to be converted to RGB
-            self.normalized_RGB_1 = (self.main_escape_iterations % self.settings['color_repeat'][1]) / self.settings['color_repeat'][1]
-            
-            # continuous iteration count
-            self.normalized_RGB_2 = (self.main_escape_iterations + 1 - np.log(np.log(one_time_escape_distance))/math.log(2))% self.settings['color_repeat'][1] / self.settings['color_repeat'][1]
-        
-        # colorize
-        self.compute_colors()
-        
-        # save image
-        self.save_image()
-    def save_image(self):
-        img_name = self.settings['image_name'][1]
-        # index = img_name.index('.png')
-        # img_name = img_name[:index] + "-" + str(self.iteration + 1) + img_name[index:]
-        # # print("img_name: " + str(img_name))
-        
-        Image.fromarray(np.uint8(self.final_RGB_vals)).save(img_name)
-        
-        if self.iteration == self.settings['iterations'][1] - 1:
-            final_name = img_name.replace(str(self.settings['iterations'][1]),'final')
-            os.rename(img_name,final_name)
-            return
-    def compute_colors(self):
         # create HxWx3x4 tensor to be filled with the RGB values
         # 3: one for each color channel
         # 4: one for each color method
@@ -484,8 +297,192 @@ class Colorizer:
                 else:
                     winning_color_scheme[lowest_finish_iteration==self.OT_escape_iterations[...,i]]=i
         for i in range(0,4): self.final_RGB_vals[winning_color_scheme==i]=self.RGB_vals[...,i][winning_color_scheme==i]
+    def shortest_distance(self, equation, points): #calculates the minimum distance between a point and a line
+        if equation[0] == 0:
+            return abs(equation[1] - points.imag), points.real, points.real * 0 + equation[1]
+        multiplicative_inverse = -1 / equation[0]
+
+        # been some time since I wrote this, but I think perp_equation is
+        # to the center line of the second arm of the trap, for each point
+        perp_equation = (multiplicative_inverse, points.imag - multiplicative_inverse * points.real)
+        intersection_point_x = (perp_equation[1] - equation[1]) / (equation[0] - perp_equation[0])
+        intersection_point_y = intersection_point_x * equation[0] + equation[1]
+
+        # returns the distance, and x and y coordinates of the intersection point, for each pixel
+        return self.pythagoras(points.real - intersection_point_x, points.imag - intersection_point_y), intersection_point_x, intersection_point_y
+    def seconds_to_time(self, seconds_in):
+        try:
+            seconds_in = float(seconds_in)
+        except:
+            self.parent.text_out.write("Type error: non-number passed to the seconds_to_time function.")
+            return
+        if seconds_in > 3600:
+            hours = int(seconds_in // 3600)
+            minutes = int(seconds_in % 3600/60)
+            seconds = format((seconds_in % 60), '.2f')
+            result = str(hours) + "h " + str(minutes)+ "m "+ seconds + "s"
+        elif seconds_in > 60:
+            minutes = int(seconds_in // 60)
+            seconds = format(seconds_in % 60, '.2f')
+            result = str(minutes) + "m " + seconds + "s"
+        else:
+            seconds =  format(seconds_in, '.2f')
+            result = seconds + "s"
+        return result
+    def pythagoras(self, a, b):
+        if type(a) == np.ndarray or type(b) == np.ndarray:
+            return np.power(np.power(a, 2) + np.power(b, 2), .5)
+        return math.pow(math.pow(a, 2) + math.pow(b, 2), .5)
+    def OT_ellipse(self, z_current, which_scheme):
+        A = z_current.real
+        B = z_current.imag
+        # focus = self.packed_settings['OT_focus'][1][which_scheme].split(",")
+        focus = (self.packed_settings['OT_focus_x'][which_scheme], self.packed_settings['OT_focus_y'][which_scheme])
+        X = float(focus[0])
+        Y = float(focus[1])
+        XR = self.packed_settings['OT_radius1'][which_scheme]
+        if self.settings['scheme_dropdown'][1][which_scheme] == 2: YR = XR
+        else: YR = self.packed_settings['OT_radius2'][which_scheme]
+        rotation = self.packed_settings['OT_rotation'][which_scheme]
+        x_component = np.power((((A - X) * np.cos(rotation) - (B - Y) * np.sin(rotation)) / XR), 2)
+        y_component = np.power((((A - X) * np.sin(rotation) - (B - Y) * np.cos(rotation)) / YR), 2)
+
+        # check if point falls within orbit trap
+        in_trap = x_component + y_component <= 1
+
+        # where point falls within orbit trap, increment the trap count
+        self.OT_trap_count[...,which_scheme][in_trap] = self.OT_trap_count[...,which_scheme][in_trap] + 1
+
+        # where trap threshold met, show true
+        threshold_met = self.OT_trap_count[...,which_scheme] == self.packed_settings['OT_trap_count'][which_scheme]
+
+        # where trap count threshold newly reached, set normalized RGB value (between 0 and 1)
+        self.OT_RGBs[...,which_scheme][np.logical_and(threshold_met, np.invert(self.previously_trapped[...,which_scheme]))] = (self.pythagoras(A - X, B - Y) % self.packed_settings['OT_loop_distance'][which_scheme])[np.logical_and(threshold_met, np.invert(self.previously_trapped[...,which_scheme]))]
+
+        # where trap count threshold newly reached, record the current iteration count
+        self.OT_escape_iterations[...,which_scheme][np.logical_and(threshold_met, np.invert(self.previously_trapped[...,which_scheme]))]=self.current_iteration
+
+        # show which color scheme trapped the pixel
+        self.OT_which_trap[np.logical_and(threshold_met, np.invert(self.previously_trapped[...,which_scheme]))] = which_scheme
+
+        # turn to true where trap requirements met and RGB value is set
+        self.previously_trapped[...,which_scheme] += threshold_met
+    def OT_cross(self, z_current, which_scheme):
+
+        slope = math.tan(self.packed_settings['OT_rotation'][which_scheme] % 2*math.pi)
+        if slope != 0: perpendicular_slope = -1/slope
+        else: perpendicular_slope = 9999999
+        focus = [self.packed_settings['OT_focus_x'][which_scheme], self.packed_settings['OT_focus_y'][which_scheme]]
+        for i,j in enumerate(focus): focus[i]=float(j) #cast the entries as floats
+        equation = (slope, focus[1] - slope * focus[0] )
+        perpendicular_equation = (perpendicular_slope, focus[1] - perpendicular_slope * focus[0])
+
+        # line 2 is perpendicular to line 1, for the second arm of the "cross"
+        dist_to_line1 = self.shortest_distance(equation, z_current)
+        dist_to_line2 = self.shortest_distance(perpendicular_equation, z_current)
+
+        # trickery = np.array(z_current)
+        # trickery.real = z_current.imag
+        # trickery.imag = z_current.real
+        # dist_to_line2 = self.shortest_distance(equation, trickery)
+
+        starting_width = self.packed_settings['OT_starting_width'][which_scheme]
+        width_deflection = self.packed_settings['OT_width_deflection'][which_scheme]
+
+        # check if points fall within orbit trap
+        in_trap = np.logical_or(dist_to_line1[0] <= starting_width / 2 + width_deflection * self.pythagoras(dist_to_line1[1] - focus[0], dist_to_line1[2] - focus[1]),
+                                        dist_to_line2[0] <= starting_width / 2 + width_deflection * self.pythagoras(dist_to_line2[1] - focus[0], dist_to_line2[2] - focus[1]))
+
+        # where points fall within orbit trap, increment the trap count
+        self.OT_trap_count[...,which_scheme][in_trap] = self.OT_trap_count[...,which_scheme][in_trap] + 1
+
+        # create mask for where the threshold is met
+        threshold_met = self.OT_trap_count[...,which_scheme] == self.packed_settings['OT_trap_count'][which_scheme]
+
+        color_loop_dist = self.packed_settings['OT_loop_distance'][which_scheme]
+
+        # where trap count threshold newly reached, set normalized RGB value (between 0 and 1)
+        self.OT_RGBs[...,which_scheme][np.logical_and(threshold_met, np.invert(self.previously_trapped[...,which_scheme]))] = ((self.pythagoras(z_current.real - focus[0], z_current.imag - focus[1]) % color_loop_dist) / color_loop_dist)[np.logical_and(threshold_met, np.invert(self.previously_trapped[...,which_scheme]))]
+
+        # where trap count threshold newly reached, record the current iteration count
+        self.OT_escape_iterations[...,which_scheme][np.logical_and(threshold_met, np.invert(self.previously_trapped[...,which_scheme]))]=self.current_iteration
+
+        # show which color scheme trapped the pixel
+        self.OT_which_trap[np.logical_and(threshold_met, np.invert(self.previously_trapped[...,which_scheme]))] = which_scheme
+
+        # turn to true where trap requirements met and RGB value is set
+        self.previously_trapped[...,which_scheme] += threshold_met
+
+        return
+    def OT_spiral(self, focus, rotation, starting_width, width_deflection):
+        dist_point_from_focus = pythagoras(point[0] - focus[0], point[1] - focus[1])
+        angle = asin((point[1] - focus[1]) / dist_point_from_focus)
+        #calculate bounds of perspective in coordinate grid
+        #analyze portions accordingly
+        #find local minima
+        #8-10 repetitions of dividing range by 2, determining if should be lower or higher
+        #infer global minimum by finding smallest one before they start increasing again
+        #thus determine distance from spiral orbit trap, and compute color accordingly
+
+        def length(a, t): #calculates length of spiral r = a^t from its start, given a(arbitrary coefficient), and t(theta; the angle)
+            term1 = math.log(a)**2
+            term2 = a**t*math.log(a)*math.cos(t)
+            term3 = -a**t*math.sin(t)
+            term4 = a**t*math.cos(t)
+            term5 = a**t*math.log(a)*math.sin(t)
+            term6 = math.log(a)**3
+            term7 = math.log(a)
+            upper_bound = (term1 + 1) * ((term2 + term3)**2 + (term4 + term5)**2)**.5 / (term6 + term7)
+            t = 0
+            term1 = math.log(a)**2
+            term2 = a**t*math.log(a)*math.cos(t)
+            term3 = -a**t*math.sin(t)
+            term4 = a**t*math.cos(t)
+            term5 = a**t*math.log(a)*math.sin(t)
+            term6 = math.log(a)**3
+            term7 = math.log(a)
+            lower_bound = (term1 + 1) * ((term2 + term3)**2 + (term4 + term5)**2)**.5 / (term6 + term7)
+            return upper_bound - lower_bound
+    def OT_line(self, z_current, which_scheme):
+
+        slope = math.tan(self.packed_settings['OT_rotation'][which_scheme] % math.pi/2)
+        focus = [self.packed_settings['OT_focus_x'][which_scheme], self.packed_settings['OT_focus_y'][which_scheme]]
+        for i,j in enumerate(focus): focus[i]=float(j) #cast the entries as floats
+        equation = (slope, focus[1] - slope * focus[0])
+
+        # QC the "trickery". Convince yourself it's correct.
+        # line 2 is perpendicular to line 1, for the second arm of the "cross"
+        dist_to_line = self.shortest_distance(equation, z_current)
+
+        starting_width = self.packed_settings['OT_starting_width'][which_scheme]
+        width_deflection = self.packed_settings['OT_width_deflection'][which_scheme]
+
+        # check if points fall within orbit trap
+        in_trap = dist_to_line[0] <= starting_width / 2 + width_deflection * self.pythagoras(dist_to_line[1] - focus[0], dist_to_line[2] - focus[1])
+
+        # where points fall within orbit trap, increment the trap count
+        self.OT_trap_count[...,which_scheme][in_trap] = self.OT_trap_count[...,which_scheme][in_trap] + 1
+
+        # create mask for where the threshold is met
+        threshold_met = self.OT_trap_count[...,which_scheme] == self.packed_settings['OT_trap_count'][which_scheme]
+
+        color_loop_dist = self.packed_settings['OT_loop_distance'][which_scheme]
+
+        # where trap count threshold newly reached, set normalized RGB value (between 0 and 1)
+        self.OT_RGBs[...,which_scheme][np.logical_and(threshold_met, np.invert(self.previously_trapped[...,which_scheme]))] = ((self.pythagoras(z_current.real - focus[0], z_current.imag - focus[1]) % color_loop_dist) / color_loop_dist)[np.logical_and(threshold_met, np.invert(self.previously_trapped[...,which_scheme]))]
+
+        # where trap count threshold newly reached, record the current iteration count
+        self.OT_escape_iterations[...,which_scheme][np.logical_and(threshold_met, np.invert(self.previously_trapped[...,which_scheme]))]=self.current_iteration
+
+        # show which color scheme trapped the pixel
+        self.OT_which_trap[np.logical_and(threshold_met, np.invert(self.previously_trapped[...,which_scheme]))] = which_scheme
+
+        # turn to true where trap requirements met and RGB value is set
+        self.previously_trapped[...,which_scheme] += threshold_met
+
+        return
     def color_hierarchy(self, order, RGB):
-        order = order.upper()
+
         # bool matrix for where the pixels did not escape
         no_RGB = RGB < 0
 
@@ -522,7 +519,6 @@ class Colorizer:
         RGB_matrix[no_RGB] = (0,0,0)
         return RGB_matrix
     def RGB_arbitrary_scale(self, color_string, RGB_array):
-        color_string = color_string.upper()
         color_table = {}
         color_table[0] = ('BLACK',(0,0,0))
         color_table[1] = ('WHITE',(255,255,255))
@@ -580,3 +576,36 @@ class Colorizer:
         the_answer = renormalized_RGB_array * color_range + color_start
 
         return the_answer
+    def save_to_log(self, time):
+        if not os.path.isfile(os.getcwd().replace('\\','/') + "/save/log.csv"):
+            f = open(os.getcwd().replace('\\','/') + "/save/log.csv","w")
+            line = 'X Min,X Max,Y Min,Y Max,Image Width,Image Height,Iterations,Time\n'
+            f.write(line)
+        else:
+            f = open(os.getcwd().replace('\\','/') + "/save/log.csv","a")
+        line = str(self.settings['x_min'][1]) + ", " + str(self.settings['x_max'][1]) + ", " + str(self.settings['y_min'][1]) + ", " + str(self.settings['y_max'][1]) + ", " + str(self.settings['image_width'][1]) + ", " + str(self.settings['image_height'][1]) + ", " + str(self.settings['iterations'][1]) + ", " + str(time) + '\n'
+        f.write(line)
+        f.close()
+    def save_settings(self, manual=False, default=False):
+        if default: f = os.getcwd().replace('\\','/')+"/save/default.json"
+        elif manual: f = self.settings['save_filename'][1]
+        else:
+            if os.path.isfile(os.getcwd().replace('\\','/') + "/save/recent_settings.json"):
+                if os.path.isfile(os.getcwd().replace('\\','/') + "/save/recent_settings_old.json"):
+                    os.remove(os.getcwd().replace('\\','/') + "/save/recent_settings_old.json")
+                os.rename(os.getcwd().replace('\\','/') + "/save/recent_settings.json", 
+                          os.getcwd().replace('\\','/') + "/save/recent_settings_old.json")
+            f = os.getcwd().replace('\\','/') + '/save/recent_settings.json'
+        with open(f, 'w') as fp:
+            json.dump(self.settings, fp, sort_keys=True, indent=4)
+        if default: 
+            self.parent.text_out.write("\n!!!!! Default Settings Have Been Set !!!!!")
+        elif manual: self.parent.text_out.write("\n!!!!! Settings Have Been Saved !!!!!")
+        else: self.parent.text_out.write("\n!!!!! Settings Have Been Backed Up !!!!!")
+    def settings_import_from_file(self, filename):
+        try:
+            with open(filename, 'r') as fp:
+                self.settings = json.load(fp)
+        except: 
+            print("Couldn't import file settings from " + filename)
+        return

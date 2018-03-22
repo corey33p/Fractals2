@@ -1,15 +1,17 @@
 import tkinter as tk
-from tkinter import Tk,ttk,Label,Entry,Canvas,Button,IntVar,Radiobutton,Checkbutton,StringVar,Text
+from tkinter import Tk,ttk,Label,Entry,Canvas,Button,IntVar,Radiobutton,Checkbutton,StringVar,Text,BooleanVar
 import os
 from Fractal_Canvas import FractalCanvas
 import sys
-from Fractal_Fractal import Fractal
 from Fractal_Batch_Window import BatchWindow
 from text_window import TextWriter
 import time
 import threading
 import math
 from Vertical_Scroll import VerticalScrollGrid
+import win32gui
+import win32con
+from tkinter import filedialog
 
 class Window:
     def __init__(self, parent, batch=False):
@@ -63,94 +65,7 @@ class Window:
         self.iterations.insert("end", '42')
         self.iterations.grid(row=5, column=1)
         #
-        def zoom_from_rectangle():
-            debug = False
-            #find center point of user rectangle in the rotated coordinate plane
-            #fill minimums and maximums with same dimensions as user rectangle about said center point
-            #----------------------
-            #find rectangle centerpoint in pixels
-            rectangle_centerpoint_x_in_pixels = (self.parent.canvas_object.rect_start_x + self.parent.canvas_object.rect_end_x) / 2 - self.parent.canvas_object.image_start_x
-            rectangle_centerpoint_y_in_pixels = (self.parent.canvas_object.rect_start_y + self.parent.canvas_object.rect_end_y) / 2 - self.parent.canvas_object.image_start_y
-            if debug: print("\nrect centerpoint (pixels): " + str(rectangle_centerpoint_x_in_pixels) + ", " + str(rectangle_centerpoint_y_in_pixels))
-            #----------------------
-            #find size, in pixels, of the rectangle
-            rect_x_width = abs(self.parent.canvas_object.rect_end_x - self.parent.canvas_object.rect_start_x)
-            rect_y_width = abs(self.parent.canvas_object.rect_end_y - self.parent.canvas_object.rect_start_y)
-            if debug: print("rect dimensions: " + str(rect_x_width) + " x " + str(rect_y_width))
-            #----------------------
-            #find center of image in fractal coordinate plane
-            image_center_x = (parent.fractal_object.settings['x_min'][1] + parent.fractal_object.settings['x_max'][1]) / 2
-            image_center_y = (parent.fractal_object.settings['y_min'][1] + parent.fractal_object.settings['y_max'][1]) / 2
-            if debug: print("image center in coordinate plane: " + str(image_center_x) + ", " + str(image_center_y))
-            #----------------------
-            #find original image size in fractal coordinate plane
-            original_x_coordinate_width = parent.fractal_object.settings['x_max'][1] - parent.fractal_object.settings['x_min'][1]
-            original_y_coordinate_width = parent.fractal_object.settings['y_max'][1] - parent.fractal_object.settings['y_min'][1]
-            if debug: print("original coordinate width, height: " + str(original_x_coordinate_width) + " x " + str(original_y_coordinate_width))
-            #----------------------
-            #find tentative rectangle coordinate widths by proportion
-            tentative_rect_x_coordinate_width = original_x_coordinate_width * rect_x_width / self.parent.canvas_object.resize_image_size[0]
-            tentative_rect_y_coordinate_width = original_y_coordinate_width * rect_y_width / self.parent.canvas_object.resize_image_size[1]
-            if debug: print("tentative rect coord widths: " + str(tentative_rect_x_coordinate_width) + ", " + str(tentative_rect_y_coordinate_width))
-            #----------------------
-            #find centerpoint of rectangle in fractal coordinates, before accounting for rotation
-            tentative_rectangle_centerpoint_x = parent.fractal_object.settings['x_min'][1] + (original_x_coordinate_width * rectangle_centerpoint_x_in_pixels / self.parent.canvas_object.resize_image_size[0])
-            tentative_rectangle_centerpoint_y = parent.fractal_object.settings['y_min'][1] + (original_y_coordinate_width * rectangle_centerpoint_y_in_pixels / self.parent.canvas_object.resize_image_size[1])
-            if debug: print("rect center point, pre adjusted: " + str(tentative_rectangle_centerpoint_x) + ", " + str(tentative_rectangle_centerpoint_y))
-            #----------------------
-            #calculate distance from center of rectangle to center of image
-            center_rect_distance_from_center_image = self.pythagoras(tentative_rectangle_centerpoint_x - image_center_x, tentative_rectangle_centerpoint_y - image_center_y)
-            if debug: print("dist center rect from center image: " + str(center_rect_distance_from_center_image))
-            #----------------------
-            #find the angle to the center of the rectangle relative to orientation of the image
-            angle_to_rectangle_in_image = math.acos((tentative_rectangle_centerpoint_x - image_center_x) / center_rect_distance_from_center_image)
-            if tentative_rectangle_centerpoint_y < image_center_y:
-                angle_to_rectangle_in_image = 2 * math.pi - angle_to_rectangle_in_image
-            if debug: print("angle from image orientation to center rect: " + str(angle_to_rectangle_in_image))
-            #----------------------
-            #adjust rectangle centerpoint for rotation of image. AKA, stretch diagonally
-            angle_to_corner_image_from_image_axis = math.tan(original_y_coordinate_width / original_x_coordinate_width)
-            if (angle_to_rectangle_in_image < angle_to_corner_image_from_image_axis) or (abs(math.pi - angle_to_rectangle_in_image) < angle_to_corner_image_from_image_axis) or (2 * math.pi - angle_to_rectangle_in_image < angle_to_corner_image_from_image_axis): rect_distance_scalar = (center_rect_distance_from_center_image / math.cos(angle_to_rectangle_in_image))
-            else: rect_distance_scalar = (center_rect_distance_from_center_image / math.sin(angle_to_rectangle_in_image))
-            scalar_rectangle_centerpoint_x = parent.fractal_object.settings['x_min'][1] + (rect_distance_scalar * rectangle_centerpoint_x_in_pixels / self.parent.canvas_object.resize_image_size[0])
-            scalar_rectangle_centerpoint_y = parent.fractal_object.settings['y_min'][1] + (rect_distance_scalar * rectangle_centerpoint_y_in_pixels / self.parent.canvas_object.resize_image_size[1])
-            denominator = self.pythagoras(original_x_coordinate_width / 2, original_y_coordinate_width / 2)
-            adjusted_rectangle_centerpoint_x = (original_x_coordinate_width / 2) / scalar_rectangle_centerpoint_x * denominator
-            adjusted_rectangle_centerpoint_y = (original_y_coordinate_width / 2) / scalar_rectangle_centerpoint_y * denominator
-            if debug: print("new dist center rect from center image: " + str(center_rect_distance_from_center_image))
-            if debug: print("adjusted rect center point: " + str(adjusted_rectangle_centerpoint_x) + ", " + str(adjusted_rectangle_centerpoint_y))
-            #----------------------
-            #get angle of image
-            parent.fractal_object.settings['rotation'] = ['float', float(self.rotation.get())]
-            image_angle_in_radians = parent.fractal_object.settings['rotation'][1] * math.pi / 180
-            if debug: print("image angle: " + str(image_angle_in_radians))
-            #----------------------
-            #find the center of the rectangle in fractal coord plane adjusting for rotation of image
-            x_coordinate_add = center_rect_distance_from_center_image * math.cos(image_angle_in_radians + angle_to_rectangle_in_image)
-            y_coordinate_add = center_rect_distance_from_center_image * math.sin(image_angle_in_radians + angle_to_rectangle_in_image)
-            x_coordinate_final = image_center_x + x_coordinate_add
-            y_coordinate_final = image_center_y + y_coordinate_add
-            if debug: print("rect centerpoint final: " + str(x_coordinate_final) + ", " + str(y_coordinate_final))
-            #----------------------
-            #calculate final coordinate widths??
-            #----------------------
-            #calculate new coordinate bounds with new coordinate widths and new coordinate centerpoint
-            new_min_x = x_coordinate_final - tentative_rect_x_coordinate_width / 2
-            new_max_x = x_coordinate_final + tentative_rect_x_coordinate_width / 2
-            new_min_y = y_coordinate_final - tentative_rect_y_coordinate_width / 2
-            new_max_y = y_coordinate_final + tentative_rect_y_coordinate_width / 2
-            #finally, replace GUI coord bounds with newly calc'd coord bounds based on rectangle
-            self.x_min.delete(0, "end")
-            self.x_min.insert("end", str(new_min_x))
-            self.x_max.delete(0, "end")
-            self.x_max.insert("end", str(new_max_x))
-            self.y_min.delete(0, "end")
-            self.y_min.insert("end", str(new_min_y))
-            self.y_max.delete(0, "end")
-            self.y_max.insert("end", str(new_max_y))
-            self.parent.text_out.write("\n!!!!! Coordinates Updated !!!!!")
-            return
-        Button(self.fractal_settings_frame, text='Get Rectangle', command=zoom_from_rectangle,font=self.font).grid(row=5, column=2)
+        # Button(self.fractal_settings_frame, text='Get Rectangle', command=lambda: self.zoom_from_rectangle(by_button = True),font=self.font).grid(row=5, column=2)
         #
         Label(self.fractal_settings_frame, text="Image Width: ",font=self.font).grid(row=1, column=2)
         self.image_width = Entry(self.fractal_settings_frame, justify = "right",font=self.font)
@@ -632,6 +547,18 @@ class Window:
         self.black_background_check.set(1)
         self.black_background_button = Checkbutton(self.coloring_settings_frame, text="Black Background",font=self.font, variable=self.black_background_check)
         self.black_background_button.grid(row=23, column=0, sticky="w")
+        #
+        self.repeat_colors_check = IntVar()
+        self.repeat_colors_check.set(1)
+        self.repeat_colors_button = Checkbutton(self.coloring_settings_frame, text="Repeat Colors",font=self.font, variable=self.repeat_colors_check)
+        self.repeat_colors_button.grid(row=23,column=1,sticky="w")
+        #
+        Label(self.coloring_settings_frame, text="Color Repeat Value: ",font=self.font).grid(row=23, column=2)
+        self.color_repeat_frame = ttk.Frame(self.coloring_settings_frame)
+        self.color_repeat_frame.grid(row=23, column=3, sticky="ew")
+        self.color_repeat = Entry(self.color_repeat_frame, width=6, justify = "right",font=self.font)
+        self.color_repeat.insert("end", '21')
+        self.color_repeat.pack(side="left")
         #----------------------------
         self.bottom_buttons_frame = ttk.Frame(self.scrolled_frame.frame)
         ttk.Separator(self.bottom_buttons_frame, orient="horizontal").grid(row=9, columnspan=4, sticky="ew")
@@ -648,7 +575,7 @@ class Window:
         self.load_filename.pack(side="left", expand=True, fill="x")
         self.load_filename_frame.grid_columnconfigure(0, weight=1)
         def browse_for_load_file():
-            file = filedialog.askopenfilename(parent=self.load_filename_frame, initialdir=os.getcwd(), title='Select A Settings File',filetypes = (("json files","*.json"),("all files","*.*")))
+            file = filedialog.askopenfilename(parent=self.load_filename_frame, initialdir=os.getcwd()+"\\save", title='Select A Settings File',filetypes = (("json files","*.json"),("all files","*.*")))
             self.load_filename.delete(0, "end")
             self.load_filename.insert("end", file)
             return
@@ -678,29 +605,125 @@ class Window:
         self.parent.canvas_object.proportion_rectangle_check.set(1)
         self.proportion_rectangle_button = Checkbutton(self.fractal_settings_frame,font=self.font, text="Scale Rectangle", variable=self.parent.canvas_object.proportion_rectangle_check)
         self.proportion_rectangle_button.grid(row=5, column=3)
+        #
+        self.zoom_out_check = BooleanVar()
+        self.zoom_out_check.set(False)
+        self.zoom_out_check_button = Checkbutton(self.fractal_settings_frame,font=self.font, text="Zoom Out", variable=self.zoom_out_check)
+        self.zoom_out_check_button.grid(row=5,column=2)
         ##--------
         ##--------
         Button(self.bottom_buttons_frame, text='Load Settings', command=self.load_settings_from_file,font=self.font).grid(row=21, column=3, sticky="ew", pady=4)
         Button(self.bottom_buttons_frame, text='Save Settings', command=self.save_settings_file,font=self.font).grid(row=22, column=3, sticky="ew", pady=4)
         Button(self.bottom_buttons_frame, text='Set Default Settings',font=self.font, command=lambda: self.save_settings_file(default=True)).grid(row=23, column=1, sticky="ew", pady=4)
         Button(self.bottom_buttons_frame, text='Load Default Settings',font=self.font, command=self.load_default_settings).grid(row=23, column=3, sticky="ew", pady=4)
-        self.generate_button = Button(self.bottom_buttons_frame, text='Generate', command=self.fractal_thread,font=self.font)
+        self.generate_button = Button(self.bottom_buttons_frame, text='Generate', command=self.generate_fractal,font=self.font)
         self.generate_button.grid(row=24, column=1, sticky="ew", pady=4)
-        Button(self.bottom_buttons_frame, text='Quit', command=self.master.destroy,font=self.font).grid(row=24, column=3, sticky="ew", pady=4)
+        def quit():
+            for handle in self.parent.cli_handles:
+                win32gui.PostMessage(handle,win32con.WM_CLOSE,0,0)
+        Button(self.bottom_buttons_frame, text='Quit', command=quit,font=self.font).grid(row=24, column=3, sticky="ew", pady=4)
         ##--------
         ##--------
         self.CLI_frame = ttk.Frame(self.scrolled_frame.frame)
         self.CLI_frame.grid(row=3, column=0)
-        self.textbox=Text(self.CLI_frame, background="black", height=5, width=110,foreground="green",font=self.font)
+        self.textbox=Text(self.CLI_frame, background="black", height=4, width=110,foreground="green",font=self.font)
         self.textbox.pack()
         # sys.stdout = self.parent.text_out = TextWriter(self.textbox)
         self.parent.text_out = TextWriter(self.textbox)
         ##--------
         ##--------
-        self.parent.fractal_object = Fractal(self.GUI_settings_to_dict(), self.parent)
-        ##--------
-        ##--------
         if self.batch: self.parent.window2_object = BatchWindow(self.parent)
+        ##--------
+    def zoom_from_rectangle(self,by_button=False,zoom_out=False):
+        debug = False
+        #----------------------
+        #find rectangle centerpoint in pixels
+        rectangle_centerpoint_x_in_pixels = (self.parent.canvas_object.rect_start_x + self.parent.canvas_object.rect_end_x) / 2 - self.parent.canvas_object.image_start_x
+        rectangle_centerpoint_y_in_pixels = (self.parent.canvas_object.rect_start_y + self.parent.canvas_object.rect_end_y) / 2 - self.parent.canvas_object.image_start_y
+        if debug: print("\nrect centerpoint (pixels): " + str(rectangle_centerpoint_x_in_pixels) + ", " + str(rectangle_centerpoint_y_in_pixels))
+        #----------------------
+        #find size, in pixels, of the rectangle
+        rect_x_width = abs(self.parent.canvas_object.rect_end_x - self.parent.canvas_object.rect_start_x)
+        rect_y_width = abs(self.parent.canvas_object.rect_end_y - self.parent.canvas_object.rect_start_y)
+        if debug: print("rect dimensions: " + str(rect_x_width) + " x " + str(rect_y_width))
+        #----------------------
+        #find center of image in fractal coordinate plane
+        image_center_x = (self.parent.fractal_object.settings['x_min'][1] + self.parent.fractal_object.settings['x_max'][1]) / 2
+        image_center_y = (self.parent.fractal_object.settings['y_min'][1] + self.parent.fractal_object.settings['y_max'][1]) / 2
+        if debug: print("image center in coordinate plane: " + str(image_center_x) + ", " + str(image_center_y))
+        #----------------------
+        #find original image size in fractal coordinate plane
+        original_x_coordinate_width = self.parent.fractal_object.settings['x_max'][1] - self.parent.fractal_object.settings['x_min'][1]
+        original_y_coordinate_width = self.parent.fractal_object.settings['y_max'][1] - self.parent.fractal_object.settings['y_min'][1]
+        if debug: print("original coordinate width, height: " + str(original_x_coordinate_width) + " x " + str(original_y_coordinate_width))
+        if zoom_out:
+            #----------------------
+            #find proportion of rectangle coordinate size vs original image size in coordinate plane
+            rect_x_width = rect_x_width / (rect_x_width / self.parent.fractal_object.settings['image_width'][1])**2
+            rect_y_width = rect_y_width / (rect_y_width / self.parent.fractal_object.settings['image_height'][1])**2
+            if debug: print("zoom out rect dimensions: " + str(rect_x_width) + ", " + str(rect_y_width))
+        #----------------------
+        #find tentative rectangle coordinate widths by proportion
+        tentative_rect_x_coordinate_width = original_x_coordinate_width * rect_x_width / self.parent.canvas_object.image_size[0]
+        tentative_rect_y_coordinate_width = original_y_coordinate_width * rect_y_width / self.parent.canvas_object.image_size[1]
+        if debug: print("tentative rect coord widths: " + str(tentative_rect_x_coordinate_width) + ", " + str(tentative_rect_y_coordinate_width))
+        #----------------------
+        #find centerpoint of rectangle in fractal coordinates, before accounting for rotation
+        tentative_rectangle_centerpoint_x = self.parent.fractal_object.settings['x_min'][1] + (original_x_coordinate_width * rectangle_centerpoint_x_in_pixels / self.parent.canvas_object.image_size[0])
+        tentative_rectangle_centerpoint_y = self.parent.fractal_object.settings['y_min'][1] + (original_y_coordinate_width * rectangle_centerpoint_y_in_pixels / self.parent.canvas_object.image_size[1])
+        if debug: print("rect center point, pre adjusted: " + str(tentative_rectangle_centerpoint_x) + ", " + str(tentative_rectangle_centerpoint_y))
+        #----------------------
+        #calculate distance from center of rectangle to center of image
+        center_rect_distance_from_center_image = self.pythagoras(tentative_rectangle_centerpoint_x - image_center_x, tentative_rectangle_centerpoint_y - image_center_y)
+        if debug: print("dist center rect from center image: " + str(center_rect_distance_from_center_image))
+        #----------------------
+        #find the angle to the center of the rectangle relative to orientation of the image
+        angle_to_rectangle_in_image = math.acos((tentative_rectangle_centerpoint_x - image_center_x) / center_rect_distance_from_center_image)
+        if tentative_rectangle_centerpoint_y < image_center_y:
+            angle_to_rectangle_in_image = 2 * math.pi - angle_to_rectangle_in_image
+        if debug: print("angle from image orientation to center rect: " + str(angle_to_rectangle_in_image))
+        #----------------------
+        #adjust rectangle centerpoint for rotation of image. AKA, stretch diagonally
+        angle_to_corner_image_from_image_axis = math.tan(original_y_coordinate_width / original_x_coordinate_width)
+        if (angle_to_rectangle_in_image < angle_to_corner_image_from_image_axis) or (abs(math.pi - angle_to_rectangle_in_image) < angle_to_corner_image_from_image_axis) or (2 * math.pi - angle_to_rectangle_in_image < angle_to_corner_image_from_image_axis): rect_distance_scalar = (center_rect_distance_from_center_image / math.cos(angle_to_rectangle_in_image))
+        else: rect_distance_scalar = (center_rect_distance_from_center_image / math.sin(angle_to_rectangle_in_image))
+        scalar_rectangle_centerpoint_x = self.parent.fractal_object.settings['x_min'][1] + (rect_distance_scalar * rectangle_centerpoint_x_in_pixels / self.parent.canvas_object.image_size[0])
+        scalar_rectangle_centerpoint_y = self.parent.fractal_object.settings['y_min'][1] + (rect_distance_scalar * rectangle_centerpoint_y_in_pixels / self.parent.canvas_object.image_size[1])
+        denominator = self.pythagoras(original_x_coordinate_width / 2, original_y_coordinate_width / 2)
+        adjusted_rectangle_centerpoint_x = (original_x_coordinate_width / 2) / scalar_rectangle_centerpoint_x * denominator
+        adjusted_rectangle_centerpoint_y = (original_y_coordinate_width / 2) / scalar_rectangle_centerpoint_y * denominator
+        if debug: print("new dist center rect from center image: " + str(center_rect_distance_from_center_image))
+        if debug: print("adjusted rect center point: " + str(adjusted_rectangle_centerpoint_x) + ", " + str(adjusted_rectangle_centerpoint_y))
+        #----------------------
+        #get angle of image
+        self.parent.fractal_object.settings['rotation'] = ['float', float(self.rotation.get())]
+        image_angle_in_radians = self.parent.fractal_object.settings['rotation'][1] * math.pi / 180
+        if debug: print("image angle: " + str(image_angle_in_radians))
+        #----------------------
+        #find the center of the rectangle in fractal coord plane adjusting for rotation of image
+        x_coordinate_add = center_rect_distance_from_center_image * math.cos(image_angle_in_radians + angle_to_rectangle_in_image)
+        y_coordinate_add = center_rect_distance_from_center_image * math.sin(image_angle_in_radians + angle_to_rectangle_in_image)
+        x_coordinate_final = image_center_x + x_coordinate_add
+        y_coordinate_final = image_center_y + y_coordinate_add
+        if debug: print("rect centerpoint final: " + str(x_coordinate_final) + ", " + str(y_coordinate_final))
+        #----------------------
+        #calculate new coordinate bounds with new coordinate widths and new coordinate centerpoint
+        new_min_x = x_coordinate_final - tentative_rect_x_coordinate_width / 2
+        new_max_x = x_coordinate_final + tentative_rect_x_coordinate_width / 2
+        new_min_y = y_coordinate_final - tentative_rect_y_coordinate_width / 2
+        new_max_y = y_coordinate_final + tentative_rect_y_coordinate_width / 2
+        #----------------------
+        #finally, replace GUI coord bounds with newly calc'd coord bounds based on rectangle
+        self.x_min.delete(0, "end")
+        self.x_min.insert("end", str(new_min_x))
+        self.x_max.delete(0, "end")
+        self.x_max.insert("end", str(new_max_x))
+        self.y_min.delete(0, "end")
+        self.y_min.insert("end", str(new_min_y))
+        self.y_max.delete(0, "end")
+        self.y_max.insert("end", str(new_max_y))
+        if by_button: self.parent.text_out.write("\n!!!!! Coordinates Updated !!!!!")
+        return
     def GUI_settings_to_dict(self): #GUI gather settings into dictionary
         settings = {}
         settings['x_min'] = ['float', float(self.x_min.get())]
@@ -774,6 +797,8 @@ class Window:
         settings['OT_measure_point3_y'] = ['float', float(self.OT_measure_point3_y.get())]
         settings['OT_measure_point4_x'] = ['float', float(self.OT_measure_point4_x.get())]
         settings['OT_measure_point4_y'] = ['float', float(self.OT_measure_point4_y.get())]
+        settings['repeat_colors_check'] = ['int', int(self.repeat_colors_check.get())]
+        settings['color_repeat'] = ['float', float(self.color_repeat.get())]
         settings['OT_loop_distance1'] = ['float', float(self.OT_loop_distance1.get())]
         settings['OT_loop_distance2'] = ['float', float(self.OT_loop_distance2.get())]
         settings['OT_loop_distance3'] = ['float', float(self.OT_loop_distance3.get())]
@@ -790,6 +815,22 @@ class Window:
         #       settings[key][1][1] = float(settings[key][1][1])
         return settings
     def values_from_object_to_GUI(self): #
+        # entries = ['x_min','x_max','y_min','y_max','iterations',
+                   # 'c_real','c_imag','image_width','image_height',
+                   # 'rotation','image_name','bailout_value','equation',
+                   # 'OT_focus1_x','OT_focus2_x','OT_focus3_x','OT_focus4_x',
+                   # 'OT_focus1_y','OT_focus2_y','OT_focus3_y','OT_focus4_y',
+                   # 'OT_rotation1','OT_rotation2','OT_rotation3','OT_rotation4',
+                   # 'OT_radius1_1','OT_radius1_2','OT_radius1_3','OT_radius1_4',
+                   # 'OT_radius2_1','OT_radius2_2','OT_radius2_3','OT_radius2_4',
+                   # 'OT_starting_width1','OT_starting_width2','OT_starting_width3','OT_starting_width4',
+                   # 'OT_width_deflection1','OT_width_deflection2','OT_width_deflection3','OT_width_deflection4',
+                   # 'OT_measure_point1_x','OT_measure_point2_x','OT_measure_point3_x','OT_measure_point4_x',
+                   # 'OT_measure_point1_y','OT_measure_point2_y','OT_measure_point3_y','OT_measure_point4_y',
+                   # 'color_repeat',
+                   # 'OT_loop_distance1','OT_loop_distance2','OT_loop_distance3','OT_loop_distance4',
+                   # 'OT_trap_count1','OT_trap_count2','OT_trap_count3','OT_trap_count4']
+        # checkbuttons = ['repeat_colors_check','black_background_check']
         try:
             self.x_min.delete(0, "end")
             self.x_min.insert("end", str(self.parent.fractal_object.settings['x_min'][1]))
@@ -931,6 +972,10 @@ class Window:
             self.OT_measure_point3_y.insert("end", str(self.parent.fractal_object.settings['OT_measure_point3_y'][1]))
             self.OT_measure_point4_y.delete(0, "end")
             self.OT_measure_point4_y.insert("end", str(self.parent.fractal_object.settings['OT_measure_point4_y'][1]))
+            if self.repeat_colors_check.get() != self.parent.fractal_object.settings['repeat_colors_check'][1]:
+                self.repeat_colors_button.invoke()
+            self.color_repeat.delete(0, "end")
+            self.color_repeat.insert("end", str(self.parent.fractal_object.settings['color_repeat'][1]))
             self.OT_loop_distance1.delete(0, "end")
             self.OT_loop_distance1.insert("end", self.parent.fractal_object.settings['OT_loop_distance1'][1])
             self.OT_loop_distance2.delete(0, "end")
@@ -962,26 +1007,14 @@ class Window:
         if self.batch: self.parent.window2_object.batch_settings_import_from_file(the_file)
         self.values_from_object_to_GUI()
         # self.parent.window2_object.batch_values_from_object_to_GUI()
-    def fractal_thread(self):
-        # self.generate_button.config(state="disabled")
-        while self.parent.fractal_processing: 
-            self.parent.stop_early = True
-            time.sleep(.25)
-        self.parent.stop_early = False
+    def generate_fractal(self):
         self.parent.fractal_object.t = time.clock()
         self.parent.fractal_object.settings = self.GUI_settings_to_dict()
         self.parent.fractal_object.save_settings()
-        self.fractal_thread = threading.Thread(target=self.fractal_thread_sequence)
-        self.fractal_thread.daemon = True
-        self.fractal_thread.start()
+        self.parent.start_fractal()
+        self.master.after(1, lambda: self.master.focus_force())
     def load_default_settings(self):
         if os.path.isfile(os.getcwd().replace('\\','/') + "/save/default.json"):
             self.load_settings_from_file(os.getcwd().replace('\\','/') + "/save/default.json")
             self.parent.text_out.write("\nDefault settings have been loaded!")
         else: self.parent.text_out.write("\nFound no default settings!")
-    def fractal_thread_sequence(self):
-        self.parent.fractal_processing = True
-        self.parent.fractal_object.compute()
-        # self.generate_button.config(state="normal")
-        self.master.after(1, lambda: self.master.focus_force())
-        self.parent.fractal_processing = False
